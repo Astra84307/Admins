@@ -2,66 +2,127 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Admin Panel</title>
+<title>Gamer Bluish Admin Panel</title>
 <style>
 body {
-    background: #0b1a33;
-    color: #fff;
-    font-family: Arial, sans-serif;
-    padding: 20px;
+    background:#0b1a33;
+    color:white;
+    font-family:Arial, sans-serif;
+    padding:20px;
 }
-
 h1 {
-    color: #00ffff;
-    text-align: center;
-    margin-bottom: 30px;
+    color:#00ffff;
+    text-align:center;
+    margin-bottom:30px;
+    font-size:28px;
 }
-
-form {
-    max-width: 500px;
-    margin: auto;
-    background: #1a2a4d;
-    padding: 20px;
-    border-radius: 20px;
-    border: 2px solid #3a5fbf;
-}
-
 input, textarea, button {
-    display: block;
-    width: 100%;
-    margin-bottom: 15px;
-    padding: 10px;
-    border-radius: 10px;
-    border: none;
-    font-size: 14px;
+    display:block;
+    width:100%;
+    margin-bottom:15px;
+    padding:12px;
+    border-radius:12px;
+    border:none;
+    font-size:14px;
 }
-
-input, textarea {
-    background: #0b1a33;
-    color: white;
+textarea, input {
+    background:#1a2a4d;
+    color:white;
 }
-
 button {
-    background: #3a5fbf;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.3s;
+    background:#3a5fbf;
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+    transition:0.3s;
 }
-
 button:hover {
-    background: #2b4a96;
+    background:#2b4a96;
 }
 </style>
 </head>
 <body>
 <h1>Admin Panel</h1>
-<form action="/addPost" method="POST" enctype="multipart/form-data">
-  <input type="text" name="title" placeholder="Post Title" required>
-  <textarea name="description" placeholder="Post Description" required></textarea>
-  <input type="text" name="download" placeholder="Download Link">
-  <input type="file" name="image" accept="image/*" required>
-  <button type="submit">Add Post</button>
-</form>
+
+<input type="text" id="title" placeholder="Post Title">
+<textarea id="description" placeholder="Post Description"></textarea>
+<input type="text" id="download" placeholder="Download Link">
+<input type="file" id="image">
+<button onclick="addPost()">Add Post</button>
+
+<script>
+const TOKEN = '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';
+const USER = 'Astra84307';
+const REPO = 'Admins';
+const FILE_PATH = 'posts.json';
+
+async function addPost() {
+    const title = document.getElementById('title').value;
+    const description = document.getElementById('description').value;
+    const download = document.getElementById('download').value;
+    const imageFile = document.getElementById('image').files[0];
+
+    if (!title || !description || !imageFile) {
+        alert("Please fill all fields and select an image!");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = async function() {
+        const base64Image = reader.result.split(',')[1];
+        const imageName = Date.now() + '_' + imageFile.name;
+
+        // Upload image to GitHub
+        await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/images/${imageName}`, {
+            method: 'PUT',
+            headers: { 
+                'Authorization': 'token ' + TOKEN,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: 'Add image ' + imageName,
+                content: base64Image
+            })
+        });
+
+        const imageUrl = `https://raw.githubusercontent.com/${USER}/${REPO}/main/images/${imageName}`;
+
+        // Fetch current posts.json
+        const res = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`, {
+            headers:{ 'Authorization':'token ' + TOKEN }
+        });
+        const data = await res.json();
+        const sha = data.sha;
+        const content = atob(data.content.replace(/\n/g,''));
+        const posts = JSON.parse(content);
+
+        // Add new post
+        posts.push({
+            title: title,
+            description: description,
+            download: download,
+            image: imageUrl,
+            author: "Astra84307",
+            date: new Date().toISOString()
+        });
+
+        // Update posts.json
+        await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`, {
+            method:'PUT',
+            headers:{ 'Authorization':'token ' + TOKEN },
+            body: JSON.stringify({
+                message: 'Add post ' + title,
+                content: btoa(JSON.stringify(posts,null,2)),
+                sha: sha
+            })
+        });
+
+        alert("Post added successfully!");
+        location.reload();
+    };
+    reader.readAsDataURL(imageFile);
+}
+</script>
+
 </body>
 </html>
