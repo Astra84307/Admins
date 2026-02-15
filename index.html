@@ -2,48 +2,21 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Gamer Bluish Admin Panel</title>
+<title>Fel2k Admin Panel</title>
 <style>
-body {
-    background:#0b1a33;
-    color:white;
-    font-family:Arial, sans-serif;
-    padding:20px;
-}
-h1 {
-    color:#00ffff;
-    text-align:center;
-    margin-bottom:30px;
-    font-size:28px;
-}
+body { background:#0b1a33; color:white; font-family:Arial,sans-serif; padding:20px; }
+h1 { color:#00ffff; text-align:center; margin-bottom:30px; font-size:28px; }
 input, textarea, button {
-    display:block;
-    width:100%;
-    margin-bottom:15px;
-    padding:12px;
-    border-radius:12px;
-    border:none;
-    font-size:14px;
+    display:block; width:100%; margin-bottom:15px; padding:12px;
+    border-radius:12px; border:none; font-size:14px;
 }
-textarea, input {
-    background:#1a2a4d;
-    color:white;
-}
-button {
-    background:#3a5fbf;
-    color:white;
-    font-weight:bold;
-    cursor:pointer;
-    transition:0.3s;
-}
-button:hover {
-    background:#2b4a96;
-}
+textarea, input { background:#1a2a4d; color:white; }
+button { background:#3a5fbf; color:white; font-weight:bold; cursor:pointer; transition:0.3s; }
+button:hover { background:#2b4a96; }
 </style>
 </head>
 <body>
 <h1>Admin Panel</h1>
-
 <input type="text" id="title" placeholder="Post Title">
 <textarea id="description" placeholder="Post Description"></textarea>
 <input type="text" id="download" placeholder="Download Link">
@@ -62,32 +35,23 @@ async function addPost() {
     const download = document.getElementById('download').value;
     const imageFile = document.getElementById('image').files[0];
 
-    if (!title || !description || !imageFile) {
-        alert("Please fill all fields and select an image!");
-        return;
-    }
+    if(!title || !description || !imageFile){ alert("Fill all fields!"); return; }
 
     const reader = new FileReader();
-    reader.onload = async function() {
+    reader.onload = async function(){
         const base64Image = reader.result.split(',')[1];
         const imageName = Date.now() + '_' + imageFile.name;
 
         // Upload image to GitHub
         await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/images/${imageName}`, {
-            method: 'PUT',
-            headers: { 
-                'Authorization': 'token ' + TOKEN,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                message: 'Add image ' + imageName,
-                content: base64Image
-            })
+            method:'PUT',
+            headers:{ 'Authorization':'token ' + TOKEN, 'Content-Type':'application/json' },
+            body: JSON.stringify({ message:'Add image '+imageName, content:base64Image })
         });
 
         const imageUrl = `https://raw.githubusercontent.com/${USER}/${REPO}/main/images/${imageName}`;
 
-        // Fetch current posts.json
+        // Fetch posts.json
         const res = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`, {
             headers:{ 'Authorization':'token ' + TOKEN }
         });
@@ -97,24 +61,13 @@ async function addPost() {
         const posts = JSON.parse(content);
 
         // Add new post
-        posts.push({
-            title: title,
-            description: description,
-            download: download,
-            image: imageUrl,
-            author: "Astra84307",
-            date: new Date().toISOString()
-        });
+        posts.push({ title, description, download, image:imageUrl, author:"Astra84307", date:new Date().toISOString() });
 
         // Update posts.json
         await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${FILE_PATH}`, {
             method:'PUT',
             headers:{ 'Authorization':'token ' + TOKEN },
-            body: JSON.stringify({
-                message: 'Add post ' + title,
-                content: btoa(JSON.stringify(posts,null,2)),
-                sha: sha
-            })
+            body: JSON.stringify({ message:'Add post '+title, content:btoa(JSON.stringify(posts,null,2)), sha:sha })
         });
 
         alert("Post added successfully!");
@@ -123,6 +76,5 @@ async function addPost() {
     reader.readAsDataURL(imageFile);
 }
 </script>
-
 </body>
 </html>
