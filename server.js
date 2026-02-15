@@ -1,10 +1,11 @@
 const express = require('express');
 const fs = require('fs');
-const path = require('path');
 const multer = require('multer');
+const path = require('path');
 const app = express();
 const PORT = 7700;
 
+// Serve static files
 app.use(express.static(__dirname));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -17,22 +18,20 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
-// Endpoint to add post
+// Add post
 app.post('/addPost', upload.single('image'), (req, res) => {
     const { title, description, download } = req.body;
     const image = 'images/' + req.file.filename;
-    
+
     let posts = [];
-    if (fs.existsSync('posts.json')) {
-        posts = JSON.parse(fs.readFileSync('posts.json'));
-    }
-    
+    if (fs.existsSync('posts.json')) posts = JSON.parse(fs.readFileSync('posts.json'));
+
     posts.push({ title, description, download, image });
     fs.writeFileSync('posts.json', JSON.stringify(posts, null, 2));
-    res.json({ success: true });
+    res.redirect('/index.html');
 });
 
-// Endpoint to fetch posts
+// Get posts
 app.get('/posts.json', (req, res) => {
     if (fs.existsSync('posts.json')) {
         res.json(JSON.parse(fs.readFileSync('posts.json')));
