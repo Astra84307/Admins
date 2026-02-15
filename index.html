@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gamer Admin Panel</title>
+<style>
+body{margin:0;font-family:'Roboto',sans-serif;background:#0b1a33;color:#fff;display:flex;justify-content:center}
+.appContainer{width:100%;max-width:400px;min-height:100vh;background:#11264d;border-radius:20px;padding:15px;box-shadow:0 0 20px #1e3a6d;display:flex;flex-direction:column}
+header{text-align:center;padding:15px 0;background:#1e3a6d;border-radius:15px;margin-bottom:10px;box-shadow:0 0 10px #3a5fbf}
+header h1{margin:0;color:#00ffff;font-size:1.5em}
+form{display:flex;flex-direction:column;gap:10px;margin-bottom:15px}
+input,textarea,button{border-radius:12px;border:none;padding:10px;font-size:1em}
+input,textarea{background:#1a2a4d;color:#fff}
+textarea{resize:none;height:80px}
+button{background:#3a5fbf;color:#00ffff;font-weight:bold;cursor:pointer}
+button:hover{background:#1e3a6d}
+#postsList{display:flex;flex-direction:column;gap:10px;overflow-y:auto;flex:1}
+.postCard{display:flex;background:#1a2a4d;border-radius:15px;overflow:hidden;box-shadow:0 0 10px #3a5fbf;align-items:center}
+.postCard img{width:100px;height:100px;object-fit:cover;margin:5px;border-radius:12px}
+.postContent{padding:10px;flex:1;display:flex;flex-direction:column;justify-content:space-between}
+.postContent h3{margin:0;color:#00ffff;font-size:1.1em}
+.postContent p{font-size:.9em;color:#fff;margin:5px 0}
+.postContent a{color:#3a5fbf;text-decoration:none;font-weight:bold}
+.postContent a:hover{text-decoration:underline}
+.deleteBtn{background:#ff4d4d;color:#fff;border-radius:8px;padding:5px;cursor:pointer;font-size:.8em;margin-top:5px}
+.deleteBtn:hover{background:#ff0000}
+</style>
+</head>
+<body>
+<div class="appContainer">
+<header></h1>Fel2k Official Admin</header>
+<form id="postForm">
+<input type="text" id="title" placeholder="Post Title" required>
+<textarea id="description" placeholder="Post Description" required></textarea>
+<input type="text" id="download" placeholder="Download Link">
+<input type="file" id="image" accept="image/*" required>
+<button type="submit">Add Post</button>
+</form>
+<div id="postsList"></div>
+</div>
+<script>
+const postsList=document.getElementById('postsList');
+const postForm=document.getElementById('postForm');
+function loadPosts(){
+const posts=JSON.parse(localStorage.getItem('posts')||'[]');
+postsList.innerHTML='';
+posts.forEach((p,i)=>{
+const card=document.createElement('div');
+card.className='postCard';
+card.innerHTML=`<img src="${p.image}" alt="image"><div class="postContent"><h3>${p.title}</h3><p>${p.description}</p><a href="${p.download}" target="_blank">Download</a><button class="deleteBtn" data-index="${i}">Delete</button></div>`;
+postsList.appendChild(card);
+});
+document.querySelectorAll('.deleteBtn').forEach(btn=>{
+btn.addEventListener('click',()=>{
+const index=btn.getAttribute('data-index');
+deletePost(index);
+});
+});
+}
+postForm.addEventListener('submit',e=>{
+e.preventDefault();
+const title=document.getElementById('title').value;
+const description=document.getElementById('description').value;
+const download=document.getElementById('download').value;
+const imageFile=document.getElementById('image').files[0];
+if(!imageFile)return alert('Select an image');
+const reader=new FileReader();
+reader.onload=()=>{
+const posts=JSON.parse(localStorage.getItem('posts')||'[]');
+posts.push({title,description,download,image:reader.result});
+localStorage.setItem('posts',JSON.stringify(posts));
+postForm.reset();
+loadPosts();
+};
+reader.readAsDataURL(imageFile);
+});
+function deletePost(index){
+const posts=JSON.parse(localStorage.getItem('posts')||'[]');
+posts.splice(index,1);
+localStorage.setItem('posts',JSON.stringify(posts));
+loadPosts();
+}
+window.onload=loadPosts;
+</script>
+</body>
+</html>
