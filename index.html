@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Fel2k Admin Panel</title>
+<title>Gamer Bluish Admin Panel</title>
 <style>
 body { background:#0b1a33; color:white; font-family:Arial,sans-serif; padding:20px; }
 h1 { color:#00ffff; text-align:center; margin-bottom:30px; font-size:28px; }
@@ -17,6 +17,7 @@ button:hover { background:#2b4a96; }
 </head>
 <body>
 <h1>Admin Panel</h1>
+
 <input type="text" id="title" placeholder="Post Title">
 <textarea id="description" placeholder="Post Description"></textarea>
 <input type="text" id="download" placeholder="Download Link">
@@ -35,10 +36,13 @@ async function addPost() {
     const download = document.getElementById('download').value;
     const imageFile = document.getElementById('image').files[0];
 
-    if(!title || !description || !imageFile){ alert("Fill all fields!"); return; }
+    if(!title || !description || !imageFile){
+        alert("Fill all fields and select an image!");
+        return;
+    }
 
     const reader = new FileReader();
-    reader.onload = async function(){
+    reader.onload = async function() {
         const base64Image = reader.result.split(',')[1];
         const imageName = Date.now() + '_' + imageFile.name;
 
